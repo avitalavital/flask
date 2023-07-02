@@ -1,0 +1,55 @@
+pipeline {
+    agent any
+    environment {
+        TEST_SRV_IP = '13.51.201.213'
+        PROD_SRV_IP = '13.53.177.47'
+    }
+    
+    stages {
+        stage('Cleanup') {
+            steps {
+                sh 'pwd'
+                sh 'rm -rf *'
+            }
+        }
+        stage('Clone') {
+            steps {
+                sh 'git clone https://github.com/avitalavital/flask.git'
+            }
+        }
+        
+        stage('build') {
+            steps {
+                sh 'docker image prune -a'
+                sh 'docker container prune -f'
+                sh 'cd flask && docker build -t avital1093/flask_project:1.${BUILD_NUMBER} -t avital1093/flask_project:latest.'
+            }
+        }
+        stage('push to docker hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} "
+                sh 'docker push avital1093/flask_project'
+                }
+            }
+        }
+        stage('Fetch from DockerHub') {
+            steps {
+                sh 'aws ec2 start-instances --instance-ids i-0fb4885a84c29d43f'
+                sh '''
+                ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/my_key_pair.pem ec2-user@${TEST_SRV_IP}
+                docker run -d avital1093/flask_project
+                '''
+            }
+        }
+        stage('Testing') {
+            steps {
+                // Start the testing server
+                sh 'aws ec2 start-instances --instance-ids i-0fb4885a84c29d43f'
+                sh "scp -i ~/.ssh/my_key_pair.pem -o StrictHostKeyChecking=no flask.tar.gz ec2-user@${env.TEST_SRV_IP}:~"
+                sh "ssh -i ~/.ssh/my_key_pair.pem -o StrictHostKeyChecking=no ec2-user@${env.TEST_SRV_IP} tar -xzvf flask.tar.gz"
+                
+            }
+        }
+    }
+}
