@@ -1,10 +1,10 @@
 pipeline {
     agent any
     environment {
-        TEST_SRV_IP = '13.51.201.213'
+        TEST_SRV_IP = '13.51.158.92'
         PROD_SRV_IP = '13.53.177.47'
     }
-    
+
     stages {
         stage('Cleanup') {
             steps {
@@ -16,19 +16,19 @@ pipeline {
                 sh 'git clone https://github.com/avitalavital/flask.git'
             }
         }
-        
+
         stage('build') {
             steps {
                 sh 'docker image prune -a'
                 sh 'docker container prune -f'
-                sh 'cd flask && docker build -t avital1093/flask_project:1.${BUILD_NUMBER} -t avital1093/flask_project:latest.'
+                sh 'cd flask && docker build -t avital1093/flask_project:latest .'
             }
         }
         stage('push to docker hub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} "
-                sh 'docker push avital1093/flask_project'
+                    sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} "
+                    sh 'docker push avital1093/flask_project'
                 }
             }
         }
@@ -49,19 +49,17 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Testing') {
             steps {
                 script {
-                    sh """
-                    response=\$(curl -s -o /dev/null -w "%{http_code}" http://${TEST_SRV_IP}:5000)
-                    if [[ \$response == 200 ]]; then
-                        echo "Flask app returned a 200 status code. Test passed!"
-                    else
-                        echo "Flask app returned a non-200 status code: \$response. Test failed!"
-                        exit 1  # Exit the script with a non-zero status code to indicate failure.
-                    fi
-                    """
+                    def response = sh(returnStdout: true, script: "curl -s -o /dev/null -w '%{http_code}' http://${TEST_SRV_IP}:5000")
+                    if (response.trim() == '200') {
+                        echo 'Flask app returned a 200 status code. Test passed!'
+                    } else {
+                        echo "Flask app returned a non-200 status code: ${response.trim()}. Test failed!"
+                        error('Test failed!') // Abort the pipeline with an error status
+                    }
                 }
             }
         }
