@@ -43,7 +43,6 @@ pipeline {
             steps {
                 script {
                     sh """
-                    //connect to instance
                     ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/my_key_pair.pem ec2-user@${TEST_SRV_IP} '
                     //install docker on the instance
                     sudo yum install docker -y
