@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         TEST_SRV_IP = '13.51.158.92'
-        PROD_SRV_IP = '13.53.177.47'
+        PROD_SRV_IP = '16.170.251.205'
     }
 
     stages {
@@ -60,6 +60,24 @@ pipeline {
                         echo "Flask app returned a non-200 status code: ${response.trim()}. Test failed!"
                         error('Test failed!') // Abort the pipeline with an error status
                     }
+                }
+            }
+        }
+
+        stage('deploy to prod') {
+            steps {
+                script {
+                    sh """
+                    ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/my_key_pair.pem ec2-user@${PROD_SRV_IP} '
+                    sudo yum install docker -y
+                    sudo systemctl enable docker
+                    sudo systemctl start docker
+                    sudo docker stop \$(sudo docker ps -aq)
+                    sudo docker rm \$(sudo docker ps -aq)
+                    sudo docker rmi \$(sudo docker images -q)
+                    sudo docker run -d -p 5000:5000 avital1093/flask_project
+                    '
+                    """
                 }
             }
         }
