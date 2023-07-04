@@ -8,7 +8,6 @@ pipeline {
     stages {
         stage('Cleanup') {
             steps {
-                sh 'pwd'
                 sh 'rm -rf *'
             }
         }
@@ -33,22 +32,37 @@ pipeline {
                 }
             }
         }
-        stage('Fetch from DockerHub') {
+        stage('prep test srv') {
             steps {
-                sh 'aws ec2 start-instances --instance-ids i-0fb4885a84c29d43f'
-                sh '''
-                ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/my_key_pair.pem ec2-user@${TEST_SRV_IP}
-                docker run -d avital1093/flask_project
-                '''
+                script {
+                    sh """
+                    ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/my_key_pair.pem ec2-user@${TEST_SRV_IP} '
+                    sudo yum install docker -y
+                    sudo systemctl enable docker
+                    sudo systemctl start docker
+                    sudo docker stop \$(sudo docker ps -aq)
+                    sudo docker rm \$(sudo docker ps -aq)
+                    sudo docker rmi \$(sudo docker images -q)
+                    sudo docker run -d -p 5000:5000 avital1093/flask_project
+                    '
+                    """
+                }
             }
         }
+        
         stage('Testing') {
             steps {
-                // Start the testing server
-                sh 'aws ec2 start-instances --instance-ids i-0fb4885a84c29d43f'
-                sh "scp -i ~/.ssh/my_key_pair.pem -o StrictHostKeyChecking=no flask.tar.gz ec2-user@${env.TEST_SRV_IP}:~"
-                sh "ssh -i ~/.ssh/my_key_pair.pem -o StrictHostKeyChecking=no ec2-user@${env.TEST_SRV_IP} tar -xzvf flask.tar.gz"
-                
+                script {
+                    sh """
+                    response=\$(curl -s -o /dev/null -w "%{http_code}" http://${TEST_SRV_IP}:5000)
+                    if [[ \$response == 200 ]]; then
+                        echo "Flask app returned a 200 status code. Test passed!"
+                    else
+                        echo "Flask app returned a non-200 status code: \$response. Test failed!"
+                        exit 1  # Exit the script with a non-zero status code to indicate failure.
+                    fi
+                    """
+                }
             }
         }
     }
