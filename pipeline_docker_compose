@@ -46,6 +46,7 @@ pipeline {
                     ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/my_key_pair.pem ec2-user@${TEST_SRV_IP} '
                     //install docker on the instance
                     sudo yum install docker -y
+                    sudo yum install docker-compose -y
                     sudo systemctl enable docker
                     sudo systemctl start docker
                     //get reade of leftovers from previos runnings 
@@ -53,7 +54,7 @@ pipeline {
                     sudo docker rm \$(sudo docker ps -aq)
                     sudo docker rmi \$(sudo docker images -q)
                     //run the docker
-                    sudo docker run -d -p 5000:5000 avital1093/flask_project
+                    sudo docker-compose up -d
                     '
                     """
                 }
@@ -83,6 +84,7 @@ pipeline {
                     ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/my_key_pair.pem ec2-user@${PROD_SRV_IP} '
                     //install docker on the instance
                     sudo yum install docker -y
+                    sudo yum install docker-compose -y
                     sudo systemctl enable docker
                     sudo systemctl start docker
                     //get reade of leftovers from previos runnings
@@ -90,7 +92,7 @@ pipeline {
                     sudo docker rm \$(sudo docker ps -aq)
                     sudo docker rmi \$(sudo docker images -q)
                     //run the docker
-                    sudo docker run -d -p 5000:5000 avital1093/flask_project
+                    sudo docker-compose up -d
                     '
                     """
                 }
