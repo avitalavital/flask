@@ -45,10 +45,13 @@ pipeline {
                     sh """
                     ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/my_key_pair.pem ec2-user@${TEST_SRV_IP} '
                     //install docker on the instance
+                    sudo yum update -y
                     sudo yum install docker -y
-                    sudo yum install docker-compose -y
                     sudo systemctl enable docker
                     sudo systemctl start docker
+                    sudo yum install -y curl unzip
+                    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+                    sudo chmod +x /usr/local/bin/docker-compose
                     //get reade of leftovers from previos runnings 
                     sudo docker stop \$(sudo docker ps -aq)
                     sudo docker rm \$(sudo docker ps -aq)
