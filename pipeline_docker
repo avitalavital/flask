@@ -10,7 +10,12 @@ pipeline {
         stage('Cleanup') {
             steps {
                 //delete everything from the working directory
-                sh 'rm -rf *'
+                sh """
+                rm -rf *
+                sudo docker stop \$(sudo docker ps -aq)
+                sudo docker rm \$(sudo docker ps -aq)
+                sudo docker rmi \$(sudo docker images -q)
+                """
             }
         }
         stage('Clone') {
