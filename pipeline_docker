@@ -13,7 +13,7 @@ pipeline {
                 sh 'rm -rf *'
                 //sh 'sudo docker stop \$(sudo docker ps -aq)'
                 //sh 'sudo docker rm \$(sudo docker ps -aq)'
-                //sh 'sudo docker rmi \$(sudo docker images -q)'
+                sh ' docker rmi -f $(docker images -q)'
             }
         }
         stage('Clone') {
