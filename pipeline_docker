@@ -11,9 +11,6 @@ pipeline {
             steps {
                 //delete everything from the working directory
                 sh 'rm -rf *'
-                //sh 'sudo docker stop \$(sudo docker ps -aq)'
-                //sh 'sudo docker rm \$(sudo docker ps -aq)'
-                sh ' docker rmi -f $(docker images -q)'
             }
         }
         stage('Clone') {
