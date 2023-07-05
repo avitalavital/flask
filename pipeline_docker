@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    //enter your ip here .
+    //enter your ip here
     environment {
         TEST_SRV_IP = '13.48.27.66'
         PROD_SRV_IP = '16.171.138.12'
@@ -11,9 +11,9 @@ pipeline {
             steps {
                 //delete everything from the working directory
                 sh 'rm -rf *'
-                sh 'sudo docker stop \$(sudo docker ps -aq)'
-                sh 'sudo docker rm \$(sudo docker ps -aq)'
-                sh 'sudo docker rmi \$(sudo docker images -q)'
+                //sh 'sudo docker stop \$(sudo docker ps -aq)'
+                //sh 'sudo docker rm \$(sudo docker ps -aq)'
+                //sh 'sudo docker rmi \$(sudo docker images -q)'
             }
         }
         stage('Clone') {
