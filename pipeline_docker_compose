@@ -45,7 +45,7 @@ pipeline {
                     sh """
                     ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/my_key_pair.pem ec2-user@${TEST_SRV_IP} '
                     //install docker on the instance
-                    git clone https://github.com/avitalavital/flask.git && pwd
+                    git clone https://github.com/avitalavital/flask.git
                     sudo yum install docker -y
                     sudo systemctl enable docker
                     sudo systemctl start docker
@@ -55,7 +55,7 @@ pipeline {
                     sudo docker rm \$(sudo docker ps -aq)
                     sudo docker rmi \$(sudo docker images -q)
                     //run the docker
-                    sudo docker-compose up -d
+                    cd flask && sudo docker-compose up -d
                     '
                     """
                 }
