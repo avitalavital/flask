@@ -44,6 +44,7 @@ pipeline {
                 script {
                     sh """
                     ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/my_key_pair.pem ec2-user@${TEST_SRV_IP} '
+                    sudo yum install git
                     cd ~ && git clone https://github.com/avitalavital/flask.git
                     sudo yum install docker -y
                     sudo systemctl enable docker
