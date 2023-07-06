@@ -49,6 +49,7 @@ pipeline {
                     sudo yum install docker -y
                     sudo systemctl enable docker
                     sudo systemctl start docker
+                    sudo yum install docker-compose -y
                     //get reade of leftovers from previos runnings 
                     sudo docker stop \$(sudo docker ps -aq)
                     sudo docker rm \$(sudo docker ps -aq)
