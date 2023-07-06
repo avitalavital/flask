@@ -2,7 +2,7 @@ pipeline {
     agent any
     //enter your ip here
     environment {
-        TEST_SRV_IP = '13.48.27.66'
+        TEST_SRV_IP = '13.53.142.179'
         PROD_SRV_IP = '16.171.138.12'
     }
 
