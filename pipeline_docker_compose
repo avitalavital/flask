@@ -2,8 +2,8 @@ pipeline {
     agent any
     //enter your ip here
     environment {
-        TEST_SRV_IP = '16.170.246.162'
-        PROD_SRV_IP = '13.53.92.32'
+        TEST_SRV_IP = '13.48.27.66'
+        PROD_SRV_IP = '16.171.138.12'
     }
 
     stages {
@@ -34,7 +34,7 @@ pipeline {
                 //avoid exposing your credentials
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                     sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} "
-                    // push the image to docker hub
+                    // push the image to dicker hub
                     sh 'docker push avital1093/flask_project'
                 }
             }
@@ -45,14 +45,11 @@ pipeline {
                     sh """
                     ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/my_key_pair.pem ec2-user@${TEST_SRV_IP} '
                     //install docker on the instance
-                    sudo yum update -y
-                    sudo amazon-linux-extras install docker -y
+                    git clone https://github.com/avitalavital/flask.git
+                    sudo yum install docker -y
                     sudo systemctl enable docker
                     sudo systemctl start docker
-                    sudo yum install -y curl unzip
-                    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-                    sudo chmod +x /usr/local/bin/docker-compose
-                    //get rid of leftovers from previous runnings 
+                    //get reade of leftovers from previos runnings 
                     sudo docker stop \$(sudo docker ps -aq)
                     sudo docker rm \$(sudo docker ps -aq)
                     sudo docker rmi \$(sudo docker images -q)
@@ -69,7 +66,7 @@ pipeline {
                 script {
                     //get the response code from the flask
                     def response = sh(returnStdout: true, script: "curl -s -o /dev/null -w '%{http_code}' http://${TEST_SRV_IP}:5000")
-                    //check if it's available 
+                    //check if its available 
                     if (response.trim() == '200') {
                         echo 'Flask app returned a 200 status code. Test passed!'
                     } else {
@@ -87,7 +84,18 @@ pipeline {
                     ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/my_key_pair.pem ec2-user@${PROD_SRV_IP} '
                     //install docker on the instance
                     sudo yum install docker -y
-                    sudo amazon-linux-extras install docker-compose -y
                     sudo systemctl enable docker
                     sudo systemctl start docker
-                   
+                    //get reade of leftovers from previos runnings
+                    sudo docker stop \$(sudo docker ps -aq)
+                    sudo docker rm \$(sudo docker ps -aq)
+                    sudo docker rmi \$(sudo docker images -q)
+                    //run the docker
+                    sudo docker run -d -p 5000:5000 avital1093/flask_project
+                    '
+                    """
+                }
+            }
+        }
+    }
+}
