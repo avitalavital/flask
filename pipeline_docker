@@ -35,8 +35,8 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                     sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} "
                     // push the image to dicker hub
-                    sh 'docker push avital1093/flask_project'
-                }
+                    sh 'docker push avital1093/flask_project:latest'
+                    sh "docker push avital1093/flask_project:1.${BUILD_NUMBER"}
             }
         }
         stage('prep test srv') {
