@@ -2,8 +2,8 @@ pipeline {
     agent any
     //enter your ip here
     environment {
-        TEST_SRV_IP = '13.53.142.179'
-        PROD_SRV_IP = '16.171.138.12'
+        TEST_SRV_IP = '16.171.150.112'
+        PROD_SRV_IP = '16.170.206.125'
     }
 
     stages {
@@ -41,22 +41,7 @@ pipeline {
         }
         stage('prep test srv') {
             steps {
-                script {
-                    sh """
-                    ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/my_key_pair.pem ec2-user@${TEST_SRV_IP} '
-                    //install docker on the instance
-                    sudo yum install docker -y
-                    sudo systemctl enable docker
-                    sudo systemctl start docker
-                    //get reade of leftovers from previos runnings 
-                    sudo docker stop \$(sudo docker ps -aq)
-                    sudo docker rm \$(sudo docker ps -aq)
-                    sudo docker rmi \$(sudo docker images -q)
-                    //run the docker
-                    sudo docker run -d -p 5000:5000 avital1093/flask_project
-                    '
-                    """
-                }
+               sh "cd flask && kubectl apply -f flask_kubernetes.yml"
             }
         }
 
@@ -78,7 +63,22 @@ pipeline {
 
         stage('deploy to prod') {
             steps {
-                sh "cd flask && kubectl apply -f flask_kubernetes.yml"
+                script {
+                    sh """
+                    ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/my_key_pair.pem ec2-user@${PROD_SRV_IP} '
+                    //install docker on the instance
+                    sudo yum install docker -y
+                    sudo systemctl enable docker
+                    sudo systemctl start docker
+                    //get reade of leftovers from previos runnings
+                    sudo docker stop \$(sudo docker ps -aq)
+                    sudo docker rm \$(sudo docker ps -aq)
+                    sudo docker rmi \$(sudo docker images -q)
+                    //run the docker
+                    sudo docker run -d -p 5000:5000 avital1093/flask_project
+                    '
+                    """
+                }
             }
         }
     }
