@@ -36,7 +36,7 @@ pipeline {
                     sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} "
                     // push the image to dicker hub
                     sh 'docker push avital1093/flask_project:latest'
-                    sh "docker push avital1093/flask_project:1.${BUILD_NUMBER"}
+                    sh "docker push avital1093/flask_project:1.${BUILD_NUMBER}"
             }
         }
         stage('prep test srv') {
