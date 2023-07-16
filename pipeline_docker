@@ -26,7 +26,7 @@ pipeline {
                 sh 'docker image prune -a'
                 sh 'docker container prune -f'
                 //build a docker image
-                sh 'cd flask && docker build -t avital1093/flask_project:latest .'
+                sh 'cd flask && docker build -t avital1093/flask_project:latest -t avital1093/flask_project:1.${BUILD_NUMBER} .'
             }
         }
         stage('push to docker hub') {
