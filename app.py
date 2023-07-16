@@ -6,7 +6,8 @@ app = Flask(__name__)
 # list of cat images
 images = [
 "https://media.tenor.com/OZLXGyrE6FYAAAAM/alpaca-eating.gif",
-"https://media0.giphy.com/media/3otWpNrbfVfVgyAOis/200w.gif?cid=6c09b952recmr8nlic7m1swn2vl11l5rchuo1v4eup5bwpia&ep=v1_gifs_search&rid=200w.gif&ct=g"
+"https://media0.giphy.com/media/3otWpNrbfVfVgyAOis/200w.gif?cid=6c09b952recmr8nlic7m1swn2vl11l5rchuo1v4eup5bwpia&ep=v1_gifs_search&rid=200w.gif&ct=g",
+"https://media.giphy.com/media/3o7aD43xbIl7shOMx2/giphy.gif"
 ]
 
 
