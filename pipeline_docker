@@ -2,8 +2,8 @@ pipeline {
     agent any
     //enter your ip here
     environment {
-        TEST_SRV_IP = '13.53.166.83'
-        PROD_SRV_IP = '13.51.168.13'
+        TEST_SRV_IP = '16.171.150.112'
+        PROD_SRV_IP = '16.170.206.125'
     }
 
     stages {
