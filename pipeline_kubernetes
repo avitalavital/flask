@@ -49,7 +49,7 @@ pipeline {
             steps {
                 script {
                     //get the response code from the flask
-                    def response = sh(returnStdout: true, script: "curl -s -o /dev/null -w '%{http_code}' http://172.19.75.168:6443")
+                    def response = sh(returnStdout: true, script: "curl -s -o /dev/null -w '%{http_code}' 192.168.59.1:30082")
                     //check if its available 
                     if (response.trim() == '200') {
                         echo 'Flask app returned a 200 status code. Test passed!'
