@@ -14,7 +14,7 @@ pipeline {
         stage('Cleanup') {
             steps {
                 //delete everything from the working directory
-                sh 'rm -rf flask'
+                sh 'rm -rf *'
             }
         }
         stage('Clone') {
@@ -68,7 +68,7 @@ pipeline {
         stage('deploy to prod') {
             steps {
                // Authenticate with Google Cloud SDK
-                sh 'gcloud auth activate-service-account --key-file=protean-quanta.json'
+                sh 'gcloud auth activate-service-account --key-file=/var/lib/jenkins/protean-quanta.json'
                 
                 // Get the GKE cluster credentials
                 sh "gcloud container clusters get-credentials $GKE_CLUSTER_NAME --project $GKE_PROJECT_ID --zone $GKE_ZONE"
