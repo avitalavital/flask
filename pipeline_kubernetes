@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         //Set the testing parameters
-        KUBECONFIG = '/path/to/your/kubeconfig.yaml'
+        KUBECONFIG = '/var/lib/jenkins/.kube/config'
         // Set your GKE cluster information
         GKE_PROJECT_ID = 'protean-quanta-393311'
         GKE_CLUSTER_NAME = 'my-cluster'
