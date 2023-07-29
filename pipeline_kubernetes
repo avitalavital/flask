@@ -48,7 +48,7 @@ pipeline {
                 // Authenticate with Kubernetes using kubeconfig
                 withKubeConfig(credentialsConfig: 'your-kubeconfig-credentials', kubeconfigId: 'kubeconfig') {
                     // Deploy the application to Kubernetes using kubectl apply
-                    sh "kubectl apply -f flask/flask_kubernetes.yml -n $GKE_NAMESPACE"
+                    sh "kubectl apply -f flask/flask_kubernetes.yml"
                 }
             }
         }
