@@ -2,6 +2,8 @@ pipeline {
     agent any
     //enter your ip here
     environment {
+        //Set the testing parameters
+        KUBECONFIG = '/path/to/your/kubeconfig.yaml'
         // Set your GKE cluster information
         GKE_PROJECT_ID = 'protean-quanta-393311'
         GKE_CLUSTER_NAME = 'my-cluster'
@@ -43,7 +45,10 @@ pipeline {
         }
         stage('prep test srv') {
             steps {
-               sh "cd flask && kubectl apply -f flask_kubernetes.yml"
+                // Authenticate with Kubernetes using kubeconfig
+                withKubeConfig(credentialsConfig: 'your-kubeconfig-credentials', kubeconfigId: 'kubeconfig') {
+                    // Deploy the application to Kubernetes using kubectl apply
+                    sh "kubectl apply -f flask/flask_kubernetes.yml"
             }
         }
         stage('Testing') {
