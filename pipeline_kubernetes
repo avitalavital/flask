@@ -11,6 +11,17 @@ pipeline {
     }
 
     stages {
+        stage('Print Current Namespace') {
+    steps {
+        script {
+            def currentNamespace = sh(
+                returnStdout: true,
+                script: 'kubectl config view --minify --output "jsonpath={..namespace}"'
+            ).trim()
+            echo "Current Namespace: $currentNamespace"
+        }
+    }
+}
         stage('Cleanup') {
             steps {
                 //delete everything from the working directory
