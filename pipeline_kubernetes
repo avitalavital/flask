@@ -1,6 +1,5 @@
 pipeline {
     agent any
-    //enter your ip here
     environment {
         //Set the testing parameters
         KUBECONFIG = '/path/to/your/kubeconfig.yaml'
@@ -9,6 +8,7 @@ pipeline {
         GKE_CLUSTER_NAME = 'my-cluster'
         GKE_ZONE = 'us-central1-c'
         DOCKER_IMAGE_NAME = 'avital1093/flask_project'
+        GKE_NAMESPACE = 'your-namespace' // Set the desired namespace for GKE deployment
     }
 
     stages {
@@ -24,7 +24,7 @@ pipeline {
                 sh 'git clone https://github.com/avitalavital/flask.git'
             }
         }
-        stage('build') {
+        stage('Build') {
             steps {
                 //mini clean up
                 sh 'docker image prune -a'
@@ -33,29 +33,30 @@ pipeline {
                 sh 'cd flask && docker build -t avital1093/flask_project:latest .'
             }
         }
-        stage('push to docker hub') {
+        stage('Push to Docker Hub') {
             steps {
                 //avoid exposing your credentials
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} "
+                    sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
                     // push the image to docker hub
                     sh 'docker push avital1093/flask_project'
                 }
             }
         }
-        stage('prep test srv') {
+        stage('Prep Test Srv') {
             steps {
                 // Authenticate with Kubernetes using kubeconfig
                 withKubeConfig(credentialsConfig: 'your-kubeconfig-credentials', kubeconfigId: 'kubeconfig') {
                     // Deploy the application to Kubernetes using kubectl apply
-                    sh "kubectl apply -f flask/flask_kubernetes.yml"
+                    sh "kubectl apply -f flask/flask_kubernetes.yml -n $GKE_NAMESPACE"
+                }
             }
         }
         stage('Testing') {
             steps {
                 script {
                     //get the response code from the flask
-                    def response = sh(returnStdout: true, script: "curl -s -o /dev/null -w '%{http_code}' 192.168.59.1:30082")
+                    def response = sh(returnStdout: true, script: "curl -s -o /dev/null -w '%{http_code}' http://192.168.59.1:30082")
                     //check if its available 
                     if (response.trim() == '200') {
                         echo 'Flask app returned a 200 status code. Test passed!'
@@ -66,9 +67,9 @@ pipeline {
                 }
             }
         }
-        stage('deploy to prod') {
+        stage('Deploy to Prod') {
             steps {
-               // Authenticate with Google Cloud SDK
+                // Authenticate with Google Cloud SDK
                 sh 'gcloud auth activate-service-account --key-file=/var/lib/jenkins/protean-quanta.json'
                 
                 // Get the GKE cluster credentials
@@ -78,7 +79,7 @@ pipeline {
                 sh 'kubectl config set-context $(kubectl config current-context)'
 
                 // Deploy the application to GKE using kubectl apply
-                sh "kubectl apply -f flask/flask_kubernetes.yml"
+                sh "kubectl apply -f flask/flask_kubernetes.yml -n $GKE_NAMESPACE"
 
                 // Wait for the deployment to complete (optional)
                 sh 'kubectl rollout status deployment/$YOUR_DEPLOYMENT_NAME --namespace=$GKE_NAMESPACE'
