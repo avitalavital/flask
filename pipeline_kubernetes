@@ -10,17 +10,6 @@ pipeline {
     }
 
     stages {
-        stage('Print Current Namespace') {
-    steps {
-        script {
-            def currentNamespace = sh(
-                returnStdout: true,
-                script: 'kubectl config view --minify --output "jsonpath={..namespace}"'
-            ).trim()
-            echo "Current Namespace: $currentNamespace"
-        }
-    }
-}
         stage('Cleanup') {
             steps {
                 //delete everything from the working directory
@@ -84,7 +73,7 @@ pipeline {
                 sh "gcloud container clusters get-credentials $GKE_CLUSTER_NAME --project $GKE_PROJECT_ID --zone $GKE_ZONE"
 
                 // Configure kubectl context for GKE
-                sh 'kubectl config set-context $(kubectl config current-context) --namespace=$GKE_NAMESPACE'
+                sh 'kubectl config set-context $(kubectl config current-context)'
 
                 // Deploy the application to GKE using kubectl apply
                 sh "kubectl apply -f flask/flask_kubernetes.yml"
