@@ -22,7 +22,6 @@ pipeline {
                 sh 'git clone https://github.com/avitalavital/flask.git'
             }
         }
-
         stage('build') {
             steps {
                 //mini clean up
@@ -47,7 +46,6 @@ pipeline {
                sh "cd flask && kubectl apply -f flask_kubernetes.yml"
             }
         }
-
         stage('Testing') {
             steps {
                 script {
@@ -63,7 +61,6 @@ pipeline {
                 }
             }
         }
-
         stage('deploy to prod') {
             steps {
                // Authenticate with Google Cloud SDK
