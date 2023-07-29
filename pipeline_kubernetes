@@ -2,8 +2,12 @@ pipeline {
     agent any
     //enter your ip here
     environment {
-        TEST_SRV_IP = '16.171.150.112'
-        PROD_SRV_IP = '16.170.206.125'
+        // Set your GKE cluster information
+        GKE_PROJECT_ID = 'Protean-quanta-393311'
+        GKE_CLUSTER_NAME = 'my-cluster'
+        GKE_ZONE = 'us-central1-c'
+        GKE_NAMESPACE = 'production'
+        DOCKER_IMAGE_NAME = 'avital1093/flask_project'
     }
 
     stages {
@@ -34,7 +38,7 @@ pipeline {
                 //avoid exposing your credentials
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                     sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} "
-                    // push the image to dicker hub
+                    // push the image to docker hub
                     sh 'docker push avital1093/flask_project'
                 }
             }
@@ -63,22 +67,20 @@ pipeline {
 
         stage('deploy to prod') {
             steps {
-                script {
-                    sh """
-                    ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/my_key_pair.pem ec2-user@${PROD_SRV_IP} '
-                    //install docker on the instance
-                    sudo yum install docker -y
-                    sudo systemctl enable docker
-                    sudo systemctl start docker
-                    //get reade of leftovers from previos runnings
-                    sudo docker stop \$(sudo docker ps -aq)
-                    sudo docker rm \$(sudo docker ps -aq)
-                    sudo docker rmi \$(sudo docker images -q)
-                    //run the docker
-                    sudo docker run -d -p 5000:5000 avital1093/flask_project
-                    '
-                    """
-                }
+               // Authenticate with Google Cloud SDK
+                sh 'gcloud auth activate-service-account --key-file=protean-quanta.json'
+                
+                // Get the GKE cluster credentials
+                sh "gcloud container clusters get-credentials $GKE_CLUSTER_NAME --project $GKE_PROJECT_ID --zone $GKE_ZONE"
+
+                // Configure kubectl context for GKE
+                sh 'kubectl config set-context $(kubectl config current-context) --namespace=$GKE_NAMESPACE'
+
+                // Deploy the application to GKE using kubectl apply
+                sh "kubectl apply -f flask/flask_kubernetes.yml"
+
+                // Wait for the deployment to complete (optional)
+                sh 'kubectl rollout status deployment/$YOUR_DEPLOYMENT_NAME --namespace=$GKE_NAMESPACE'
             }
         }
     }
