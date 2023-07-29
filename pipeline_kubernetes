@@ -14,7 +14,7 @@ pipeline {
         stage('Cleanup') {
             steps {
                 //delete everything from the working directory
-                sh 'rm -rf *'
+                sh 'rm -rf flask'
             }
         }
         stage('Clone') {
