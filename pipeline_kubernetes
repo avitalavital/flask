@@ -6,7 +6,6 @@ pipeline {
         GKE_PROJECT_ID = 'protean-quanta-393311'
         GKE_CLUSTER_NAME = 'my-cluster'
         GKE_ZONE = 'us-central1-c'
-        GKE_NAMESPACE = 'production'
         DOCKER_IMAGE_NAME = 'avital1093/flask_project'
     }
 
