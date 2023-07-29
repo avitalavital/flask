@@ -3,7 +3,7 @@ pipeline {
     //enter your ip here
     environment {
         // Set your GKE cluster information
-        GKE_PROJECT_ID = 'Protean-quanta-393311'
+        GKE_PROJECT_ID = 'Protean-quanta-39331113'
         GKE_CLUSTER_NAME = 'my-cluster'
         GKE_ZONE = 'us-central1-c'
         GKE_NAMESPACE = 'production'
