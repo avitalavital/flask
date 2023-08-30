@@ -24,7 +24,7 @@ pipeline {
         }
         stage('Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                     sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
                     sh 'docker push avital1093/flask_project:latest'
                     sh "docker push avital1093/flask_project:1.${BUILD_NUMBER}"
