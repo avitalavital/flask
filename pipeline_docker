@@ -19,15 +19,15 @@ pipeline {
             steps {
                 sh 'docker image prune -a'
                 sh 'docker container prune -f'
-                sh 'cd flask && docker build -t avital1093/flask_project:latest -t avital1093/flask_project:1.${BUILD_NUMBER} .'
+                sh 'cd flask && docker build -t avitalhen/flask_project:latest -t avitalhen/flask_project:1.${BUILD_NUMBER} .'
             }
         }
         stage('Push to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                     sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
-                    sh 'docker push avital1093/flask_project:latest'
-                    sh "docker push avital1093/flask_project:1.${BUILD_NUMBER}"
+                    sh 'docker push avitalhen/flask_project:latest'
+                    sh "docker push avitalhen/flask_project:1.${BUILD_NUMBER}"
                 }
             }
         }
@@ -42,7 +42,7 @@ pipeline {
                     sudo docker stop \$(sudo docker ps -aq)
                     sudo docker rm \$(sudo docker ps -aq)
                     sudo docker rmi \$(sudo docker images -q)
-                    sudo docker run -d -p 5000:5000 avital1093/flask_project
+                    sudo docker run -d -p 5000:5000 avitalhen/flask_project
                     '
                     """
                 }
