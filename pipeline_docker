@@ -1,8 +1,8 @@
 pipeline {
     agent any
     environment {
-        TEST_SRV_IP = '16.171.150.112'
-        PROD_SRV_IP = '16.170.206.125'
+        TEST_SRV_IP = '51.20.42.24'
+        PROD_SRV_IP = '13.53.167.11'
     }
     stages {
         stage('Cleanup') {
