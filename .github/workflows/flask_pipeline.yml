@@ -1,0 +1,61 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Clone Repository
+        run: |
+          git clone https://github.com/avitalavital/flask.git
+        working-directory: .
+
+      - name: Build and Push Docker Image
+        run: |
+          cd ./flask
+          docker build -t avitalhen/flask_project:latest -t avitalhen/flask_project:1.${{ github.run_number }} .
+          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+          docker push avitalhen/flask_project:latest
+          docker push avitalhen/flask_project:1.${{ github.run_number }}
+
+      - name: Prep Test Server
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} ec2-user@${{ env.TEST_SRV_IP }} '
+          sudo yum install docker -y
+          sudo systemctl enable docker
+          sudo systemctl start docker
+          sudo docker stop $(sudo docker ps -aq)
+          sudo docker rm $(sudo docker ps -aq)
+          sudo docker rmi $(sudo docker images -q)
+          sudo docker run -d -p 5000:5000 avitalhen/flask_project
+          '
+
+      - name: Testing
+        run: |
+          response=$(curl -s -o /dev/null -w '%{http_code}' http://${{ env.TEST_SRV_IP }}:5000)
+          if [ $response -eq 200 ]; then
+            echo 'Flask app returned a 200 status code. Test passed!'
+          else
+            echo "Flask app returned a non-200 status code: $response. Test failed!"
+            exit 1
+          fi
+
+      - name: Deploy to Production
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} ec2-user@${{ env.PROD_SRV_IP }} '
+          sudo yum install docker -y
+          sudo systemctl enable docker
+          sudo systemctl start docker
+          sudo docker stop $(sudo docker ps -aq)
+          sudo docker rm $(sudo docker ps -aq)
+          sudo docker rmi $(sudo docker images -q)
+          sudo docker run -d -p 5000:5000 avitalhen/flask_project
+          '
